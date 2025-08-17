@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Meko Portfolio – Minimal Music & Creative Transition to Doodle Game</title>
+  <meta name="description" content="Ultra‑minimal fullscreen music with looping theme video + audio-only play, a smooth scroll-driven doodle transition, and a playful web-game embed." />
+  <style>
+    :root {
+      --ease-out-quad: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:#000;color:#fff}
+    body{font-family:system-ui,-apple-system,Segoe UI,Inter,Roboto,sans-serif;overflow-x:hidden;line-height:1.4}
+    section{position:relative;min-height:100svh;display:flex;align-items:center;justify-content:center}
+    .sr-only{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
+
+    /* ===== MUSIC – fullscreen theme video, center play ===== */
+    .music-section{isolation:isolate}
+    .bg{position:absolute;inset:0;z-index:-2;overflow:hidden}
+    .bg>video{width:100%;height:100%;object-fit:cover;display:block;filter:brightness(.45) saturate(1.05)}
+    .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.2),rgba(0,0,0,.55));z-index:-1}
+
+    .center{display:grid;place-items:center;gap:1rem;text-align:center;padding:1.5rem}
+    .title{font-weight:800;font-size:clamp(1.125rem, 2.4vw, 1.75rem);opacity:.9}
+
+    .roundplay{--sz:clamp(80px, 10vw, 96px); width:var(--sz);height:var(--sz);border-radius:999px;display:grid;place-items:center;cursor:pointer;
+      border:2px solid rgba(255,255,255,.6);background:rgba(255,255,255,.06);backdrop-filter:blur(4px);
+      box-shadow:0 10px 40px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.15);
+      transition:transform .15s var(--ease-out-quad), background .2s var(--ease-out-quad)}
+    .roundplay:hover{transform:scale(1.05);background:rgba(255,255,255,.1)}
+    .icon{width:0;height:0;border-style:solid;border-width:14px 0 14px 22px;border-color:transparent transparent transparent #fff;margin-left:4px}
+    .pause{position:relative;width:22px;height:22px}
+    .pause::before,.pause::after{content:"";position:absolute;top:0;bottom:0;width:6px;background:#fff;border-radius:2px}
+    .pause::before{left:3px}.pause::after{right:3px}
+
+    .controls{opacity:.9;display:flex;gap:0.75rem;align-items:center;justify-content:center;font-size:0.75rem;color:#cbd5e1}
+    .controls audio{width:min(440px,90vw)}
+
+    .hint{position:absolute;bottom:1.25rem;left:50%;transform:translateX(-50%);font-size:0.7rem;letter-spacing:.16em;text-transform:uppercase;opacity:.7}
+    .hint::after{content:"";display:block;margin:0.5rem auto 0;width:2px;height:1.5rem;background:linear-gradient(#fff,#fff0);opacity:.6;animation:drop 1.4s infinite}
+    @keyframes drop{0%{transform:translateY(0)}70%{transform:translateY(8px)}100%{transform:translateY(0)}}
+
+    /* ===== Additional MUSIC DEMOS – Each is its own section ===== */
+    .demo-section{min-height:70svh;isolation:isolate;border-top:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01))}
+    .demo-section .bg>video{filter:brightness(.4) saturate(1.05)}
+    .demo-title{font-weight:700;opacity:.9;font-size:clamp(1rem,2vw,1.25rem)}
+    .demo-section .roundplay{--sz:clamp(68px, 9vw, 76px)}
+    .demo-section .controls audio{width:min(360px,90vw)}
+
+    /* ===== CREATIVE TRANSITION – scroll-driven doodle show with mask reveal ===== */
+    #transition2{min-height:200svh;overflow:clip;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)}
+    #transition2 .stage{position:sticky;top:0;height:100svh;isolation:isolate;display:grid;place-items:center;background:#070a0f; transition: filter 0.1s linear;}
+    #transition2 .sky{position:absolute;inset:0;background:radial-gradient(60vmax 40vmax at 20% 10%, rgba(255,200,220,.10), transparent 60%), radial-gradient(60vmax 40vmax at 90% 20%, rgba(160,210,255,.10), transparent 60%)}
+
+    .layer{position:absolute;inset:0;pointer-events:none;will-change:transform,opacity;}
+    .layer img{position:absolute;display:block;max-width:clamp(120px, 40vw, 400px);filter:drop-shadow(0 10px 30px rgba(0,0,0,.5))}
+    .L1 img{left:6%; top:16%; width:22vw}
+    .L2 img{right:8%; top:10%; width:26vw}
+    .L3 img{left:20%; bottom:10%; width:20vw}
+    .L4 img{right:20%; bottom:16%; width:18vw}
+
+    .lines{position:absolute;inset:0;pointer-events:none}
+    .lines svg{width:100%;height:100%}
+    .lines path{fill:none;stroke:#ffffff;stroke-opacity:.45;stroke-width:2;stroke-linecap:round;}
+
+    .reveal{position:absolute;inset:0;pointer-events:none;mask:radial-gradient(circle at 50% 60%, rgba(0,0,0,1) var(--mask, 0%), rgba(0,0,0,0) calc(var(--mask,0%) + 1%));-webkit-mask:radial-gradient(circle at 50% 60%, rgba(0,0,0,1) var(--mask, 0%), rgba(0,0,0,0) calc(var(--mask,0%) + 1%));}
+    .reveal .tint{position:absolute;inset:0;background:#0b0f16}
+
+    .tcaption{position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);opacity:.8;font-size:0.8rem; text-align: center; padding: 0 1rem;}
+
+    /* ===== GAME – doodle style (REVISED LAYOUT) ===== */
+    .game-section{background:#0b0f16;padding:clamp(3rem, 10vh, 6rem) 1.25rem; flex-direction: column;}
+    .game-intro{text-align:center; margin-bottom: 2rem;}
+    .game-title{font-weight:900;font-size:clamp(1.75rem, 6vw, 3.5rem);margin:0 0 0.5rem}
+    .game-note{opacity:.75;max-width: 50ch; margin: 0 auto; font-size: clamp(0.9rem, 2vw, 1rem);}
+    .game-frame{position:relative;width:100%;max-width:960px;border:2px dashed rgba(255,255,255,.35);border-radius:18px;overflow:hidden;background:#0b1118; line-height: 0;}
+    .game-frame::before{content:"";position:absolute;inset:0;background-image:url('assets/doodle-grid.png');background-size:64px;opacity:.08;pointer-events:none}
+    iframe{width:100%; aspect-ratio: 16 / 10; height:auto; display: block; border:0;background:#000}
+
+    footer{padding:1.75rem 1.25rem;text-align:center;opacity:.7; font-size: 0.9rem;}
+    
+    /* NEW: Wiggle animation for the doodles */
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(-1.5deg) translateX(-2px); }
+      50% { transform: rotate(1.5deg) translateX(2px); }
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- ===== MUSIC: THEME VIDEO + AUDIO ONLY ===== -->
+  <section class="music-section" id="music" aria-label="Featured Music">
+    <div class="bg">
+      <video class="bgvid" muted loop playsinline preload="none" poster="assets/music-theme.jpg" data-src="assets/music-theme.mp4"></video>
+      <div class="shade" aria-hidden="true"></div>
+    </div>
+    <div class="center">
+      <h1 class="title">Featured Music Demo</h1>
+      <button class="roundplay" data-audio="#main-audio" aria-label="Play or pause main track">
+        <span class="icon" aria-hidden="true"></span>
+      </button>
+      <div class="controls">
+        <audio id="main-audio" preload="none">
+          <source src="assets/music-theme.mp3" type="audio/mpeg" />
+        </audio>
+      </div>
+    </div>
+    <div class="hint">Scroll</div>
+  </section>
+
+  <!-- ===== MORE MUSIC DEMOS (SEPARATE SECTIONS) ===== -->
+  <section class="demo-section" aria-labelledby="demo1-title">
+    <div class="bg">
+      <video class="bgvid" muted loop playsinline preload="none" poster="assets/music-1.jpg" data-src="assets/music-1.mp4"></video>
+    </div>
+    <div class="center">
+      <h2 class="demo-title" id="demo1-title">Action Cue (Demo)</h2>
+      <button class="roundplay" data-audio="#demo1" aria-label="Play or pause Action cue">
+        <span class="icon" aria-hidden="true"></span>
+      </button>
+      <div class="controls">
+        <audio id="demo1" preload="none">
+          <source src="assets/music-1.mp3" type="audio/mpeg" />
+        </audio>
+      </div>
+    </div>
+  </section>
+  
+  <section class="demo-section" aria-labelledby="demo2-title">
+    <div class="bg">
+      <video class="bgvid" muted loop playsinline preload="none" poster="assets/music-2.jpg" data-src="assets/music-2.mp4"></video>
+    </div>
+    <div class="center">
+      <h2 class="demo-title" id="demo2-title">Exploration Theme (Demo)</h2>
+      <button class="roundplay" data-audio="#demo2" aria-label="Play or pause Exploration theme">
+        <span class="icon" aria-hidden="true"></span>
+      </button>
+      <div class="controls">
+        <audio id="demo2" preload="none">
+          <source src="assets/music-2.mp3" type="audio/mpeg" />
+        </audio>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CREATIVE TRANSITION (scroll-driven) ===== -->
+  <section id="transition2" aria-label="Creative transition to game">
+    <div class="stage">
+      <div class="sky"></div>
+      <!-- Placeholder art layers (replace with your images) -->
+      <div class="layer L1"><img src="assets/trans-layer-1.png" alt="" style="--rot:12; --y:40; --sx:.96"></div>
+      <div class="layer L2"><img src="assets/trans-layer-2.png" alt="" style="--rot:-10; --y:-60; --sx:1.06"></div>
+      <div class="layer L3"><img src="assets/trans-layer-3.png" alt="" style="--rot:6; --y:80; --sx:1.0"></div>
+      <div class="layer L4"><img src="assets/trans-layer-4.png" alt="" style="--rot:-4; --y:-30; --sx:1.04"></div>
+
+      <!-- Swoosh lines (SVG draws on scroll) -->
+      <div class="lines">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <path class="p1" d="M-5,70 C20,50 40,60 60,52 80,44 100,40 110,35" />
+          <path class="p2" d="M-5,78 C18,58 42,66 64,60 86,54 100,50 110,48" />
+        </svg>
+      </div>
+
+      <!-- Expanding mask tint that reveals the game vibe -->
+      <div class="reveal"><div class="tint"></div></div>
+      <p class="tcaption">keep scrolling… scene is changing</p>
+    </div>
+  </section>
+
+  <!-- ===== GAME SECTION (REVISED) ===== -->
+  <section class="game-section" id="game" aria-label="Playable web game">
+    <div class="game-intro">
+      <h2 class="game-title">Playable Short Game</h2>
+      <p class="game-note">Host on itch.io or GitHub Pages • Paste your embed link below</p>
+    </div>
+    <div class="game-frame">
+      <iframe class="lazyframe" data-src="https://itch.io/embed-upload/1234567?color=222222" allow="fullscreen" allowfullscreen title="Web Game"></iframe>
+    </div>
+  </section>
+
+  <footer>
+    <p>© <span id="y"></span> Meko — minimal up top, doodle at heart.</p>
+  </footer>
+  
+  <script>
+    // Lazy‑load background videos + game iframe
+    const lazyIO = new IntersectionObserver((entries)=>{
+      entries.forEach(en=>{
+        if(!en.isIntersecting) return;
+        const el = en.target; const src = el.getAttribute('data-src');
+        if(src && !el.src){ el.src = src; }
+        if(el.tagName === 'VIDEO'){ el.play && el.play().catch(()=>{}); }
+        lazyIO.unobserve(el);
+      });
+    },{rootMargin:'300px'});
+    document.querySelectorAll('video.bgvid, iframe.lazyframe').forEach(el=>lazyIO.observe(el));
+
+    // Audio controls: toggle, pause others, swap play/pause icon
+    const audios = Array.from(document.querySelectorAll('audio'));
+    function pauseOthers(except){ audios.forEach(a=>{ if(a!==except) a.pause(); }); }
+    document.querySelectorAll('.roundplay').forEach(btn=>{
+      const sel = btn.getAttribute('data-audio');
+      const audio = document.querySelector(sel);
+      const icon = btn.querySelector('span');
+
+      const setIcon = ()=>{
+        const playing = !audio.paused && !audio.ended && audio.currentTime>0;
+        icon.className = playing ? 'pause' : 'icon';
+        btn.setAttribute('aria-pressed', playing ? 'true' : 'false');
+      };
+      
+      btn.addEventListener('click',()=>{ 
+        if(audio.paused){ pauseOthers(audio); audio.play(); } 
+        else { audio.pause(); } 
+      });
+      audio.addEventListener('play',()=>{ pauseOthers(audio); setIcon(); });
+      audio.addEventListener('pause',setIcon);
+      audio.addEventListener('ended',setIcon);
+    });
+
+    // ===== Scroll‑driven Transition (ENHANCED) =====
+    (() => {
+      const sec = document.getElementById('transition2');
+      if (!sec) return;
+      const stage = sec.querySelector('.stage');
+      const layers = Array.from(stage.querySelectorAll('.layer img'));
+      const mask = stage.querySelector('.reveal');
+      const paths = Array.from(stage.querySelectorAll('.lines path'));
+
+      paths.forEach(p => {
+        const len = p.getTotalLength();
+        p.style.strokeDasharray = len;
+        p.style.strokeDashoffset = len;
+        p.dataset.len = len;
+      });
+
+      const onScroll = () => {
+        const rect = sec.getBoundingClientRect();
+        const viewHeight = window.innerHeight;
+        const scrollTotal = rect.height - viewHeight;
+        if (scrollTotal <= 0) return;
+        
+        // `p` is our master progress variable, from 0 (top) to 1 (bottom)
+        let p = (-rect.top) / scrollTotal;
+        p = Math.max(0, Math.min(1, p));
+
+        // --- NEW: Glitch & Distortion Effect ---
+        // This creates a "bubble" of intensity in the middle of the scroll.
+        // It goes from 0 -> 1 -> 0 as you scroll through the section.
+        const distortion = Math.sin(p * Math.PI);
+
+        // Apply filters to the entire stage for the glitch effect.
+        // As you scroll, it will blur, shift colors, and then clear up.
+        stage.style.filter = `
+          blur(${distortion * 3}px) 
+          contrast(${1 + distortion * 0.2})
+          hue-rotate(${distortion * 20}deg)
+        `;
+        
+        // --- EXISTING & ENHANCED ANIMATIONS ---
+        
+        // 1. Parallax Layers (with new wiggle effect)
+        layers.forEach(el => {
+          const y = parseFloat(el.style.getPropertyValue('--y') || 0);
+          const rot = parseFloat(el.style.getPropertyValue('--rot') || 0);
+          const sx = parseFloat(el.style.getPropertyValue('--sx') || 1);
+          const ty = (1 - p) * y;
+          const r = (1 - p) * rot;
+          const s = sx + (1 - sx) * p;
+          el.style.transform = `translate3d(0, ${ty}px, 0) rotate(${r}deg) scale(${s})`;
+          el.style.opacity = 0.2 + 0.8 * p;
+
+          // NEW: Control wiggle animation based on scroll
+          // The animation plays faster as the distortion effect peaks.
+          if (p > 0.1 && p < 0.9) {
+            el.style.animation = `wiggle ${0.8 - (distortion * 0.5)}s infinite ease-in-out`;
+          } else {
+            el.style.animation = 'none';
+          }
+        });
+
+        // 2. SVG Path Drawing (no changes needed here)
+        paths.forEach((path, i) => {
+          const len = parseFloat(path.dataset.len || 0);
+          const localP = Math.max(0, Math.min(1, (p - i * 0.05) / 0.6));
+          path.style.strokeDashoffset = (1 - localP) * len;
+          path.style.strokeOpacity = 0.15 + 0.45 * localP;
+        });
+
+        // 3. Mask Expansion (no changes needed here)
+        mask.style.setProperty('--mask', `${p * 140}%`);
+      };
+
+      // Throttling for performance
+      let isTicking = false;
+      const throttledScroll = () => {
+        if (!isTicking) {
+          window.requestAnimationFrame(() => {
+            onScroll();
+            isTicking = false;
+          });
+          isTicking = true;
+        }
+      };
+
+      const scrollIO = new IntersectionObserver(entries => {
+        if (entries[0].isIntersecting) {
+          window.addEventListener('scroll', throttledScroll, { passive: true });
+          throttledScroll(); // Run once on entry
+        } else {
+          window.removeEventListener('scroll', throttledScroll);
+        }
+      });
+      scrollIO.observe(sec);
+    })();
+    
+    document.getElementById('y').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
